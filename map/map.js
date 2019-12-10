@@ -321,6 +321,7 @@ var ciclonlegend = L.control({position: "bottomright"});
 		return div;
 };
 
+/*
 ///TimeDimension sismos
 
 
@@ -381,7 +382,7 @@ var timeciclonControl = new L.Control.TimeDimension(timeciclonControlOptions);
 	
 	
 var timeSeriesLayer = L.geoJSON(tormentas1);
-
+*/
 ///// Aparecer y desaparecer simbologías y barras de tiempo
 
 map.on('overlayadd', function (eventLayer) {
