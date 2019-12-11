@@ -16,17 +16,17 @@ var chart = new CanvasJS.Chart("chartContainer", {
 	},
 	axisY: {
 		title: "Número de Sismos",
-		titleFontColor: "#4F81BC",
-		lineColor: "#4F81BC",
-		labelFontColor: "#4F81BC",
-		tickColor: "#4F81BC"
-	},
-	axisY2: {
-		title: "Número de Ciclones",
 		titleFontColor: "#C0504E",
 		lineColor: "#C0504E",
 		labelFontColor: "#C0504E",
 		tickColor: "#C0504E"
+	},
+	axisY2: {
+		title: "Número de Ciclones",
+		titleFontColor: "#4F81BC",
+		lineColor: "#4F81BC",
+		labelFontColor: "#4F81BC",
+		tickColor: "#4F81BC"
 	},
 	toolTip: {
 		shared: true
