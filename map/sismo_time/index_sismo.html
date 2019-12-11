@@ -1,0 +1,36 @@
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>Mapa de fenómenos geológicos e hidrometeorológicos en el estado de Guerrero</title>			
+		<link rel="stylesheet" href="map.css">
+		<!--/ Time dimension-->
+		<title>Leaflet TimeDimension Demo</title>        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.css" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.min.css" />
+		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'/>		
+		<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no'/>
+		
+	</head>
+
+	<body>
+		<div id="map"></div>
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/leaflet@1.5.1/dist/leaflet.js"></script>
+		
+		<!--TimeDimension-->
+		<script type="text/javascript" src="
+		https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+		<script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
+		
+		<!--Datos y Mapa-->
+		<script type="text/javascript" src="sismos_usgs2.js"></script>
+		<script type="text/javascript" src="estados.js"></script>
+		<script type="text/javascript" src="guerrero.js"></script>
+		<script type="text/javascript" src="municipios_gro.js"></script>
+		<script type="text/javascript" src="placas.js"></script>
+		<script src="map.js"></script>
+	     
+        
+	</body>
+</html>
