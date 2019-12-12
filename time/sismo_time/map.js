@@ -339,5 +339,5 @@ oReq.addEventListener("load", (function(xhr) {
             }
     });
 }));
-oReq.open("GET", 'https://raw.githubusercontent.com/GAMM1031/agv_data/master/sismos_usgs2.geojson');
+oReq.open("GET", 'https://raw.githubusercontent.com/GMCentroGeo/agv_data/master/geojson/sismos_usgs2.geojson');
 oReq.send();

@@ -288,6 +288,6 @@ oReq.addEventListener("load", (function(xhr) {
             }
     });
 }));
-oReq.open("GET", 'https://raw.githubusercontent.com/GAMM1031/agv_data/master/tormentas1.geojson'); //AQUÍ IRÍA LA URL DEL GEOJSON 
+oReq.open("GET", 'https://raw.githubusercontent.com/GMCentroGeo/agv_data/master/geojson/tormentas1.geojson'); //AQUÍ IRÍA LA URL DEL GEOJSON 
 oReq.send();
 

@@ -39,12 +39,12 @@ var carto = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/ligh
 
 var baseMaps = {
 	"<b>Mapa en blanco y negro</b>": toner,
-	"<b>Mapa en tonos claros</b>": carto,
 	"<b>Mapa de calles</b>": googleStreets,
 	"<b>Imagen de satélite</b>": googleSat,
 	"<b>Mapa Híbrido</b>": googleHybrid,
 	"<b>Mapa de relieve</b>": googleTerrain,
-	"<b>Mapa de terreno</b>": terrain
+	"<b>Mapa de terreno</b>": terrain, 
+	"<b>Mapa en tonos claros</b>": carto,
 };
 
 ///// Capas de fenómenos geológicos e hidrometeorológicos
@@ -113,29 +113,23 @@ L.geoJson(guerrero, {
 
 //// Mapa de municipios de Guerrero
 
-function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: zoomToFeature
-    });
+function color_adap (ca) {
+    return ca == "Alta"   ? '#4a1486':
+           ca == "Media"  ? '#6a51a3':
+           ca == "Baja"   ? '#9e9ac8':
+                            '#f5f5f5';
 }
 
-function mun_style(feature) {
+function style_adap (feature) {
     return {
-        fillColor: 'white',
+        fillColor: color_adap(feature.properties.VUL_CC),
         weight: 0.3,
         opacity: 1,
         color: 'black',
         dashArray: '0',
-        fillOpacity: 0
+        fillOpacity: 0.7
     };
 }
-
-geojson = L.geoJson(municipios_gro, {
-	onEachFeature: onEachFeature,
-	style: mun_style
-}).addTo(map);
 
 //// Funciones de información por municipio
 
@@ -150,14 +144,27 @@ function highlightFeature(e) {
 	info.update(layer.feature.properties);
 }
 
+function resetHighlight(e) {
+    municipios.resetStyle(e.target);
+	info.update();
+}
+
 function zoomToFeature(e) {
     map.fitBounds(e.target.getBounds());
 }
 
-function resetHighlight(e) {
-    geojson.resetStyle(e.target);
-	info.update();
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToFeature
+    });
 }
+
+municipios = L.geoJson(municipios_gro, {
+	style: style_adap,
+	onEachFeature: onEachFeature
+}).addTo(map);
 
 ////// Control de información de municipios
 
@@ -172,13 +179,26 @@ info.onAdd = function (map) {
 info.update = function (props) {
     this._div.innerHTML = '<h4>Información por municipio</h4>' +  (props ?
         '<b>' + props.NOMGEO + '</b><br />' + 
-		'<br><b>Riesgo a Ciclones Tropicales:</b> ' + props.RCla_CicTr + 
-		'<br><b>Grado de Vulnerabilidad:</b> ' + props.VUL_CC +
-		'<br><b>Capacidad de Adaptación:</b> ' + props.CAP_ADAP
-        : 'Pase el cursor sobre un municipio');
+		'<br><b>Capacidad de Adaptación:</b> ' + props.CAP_ADAP  +
+		'<br><b>Riesgo a Ciclones Tropicales:</b> ' + props.RCla_CicTr  
+		: 'Pase el cursor sobre un municipio');
 };
 
 info.addTo(map);
+
+/////Simbología de Mapa municipios
+
+var munlegend = L.control({position: "topleft"});
+	munlegend.onAdd = function (map) {
+		var div = L.DomUtil.create('div', 'info legend');
+		  div.innerHTML += "<b> Grado de vulnerabilidad </b></br>";
+		  div.innerHTML += '<i style="background: #9e9ac8"></i><span>Baja</span><br>';
+		  div.innerHTML += '<i style="background: #6a51a3"></i><span>Media</span><br>';
+		  div.innerHTML += '<i style="background: #4a1486"></i><span>Alta</span><br>';
+		return div;
+};
+
+munlegend.addTo(map);
 
 ///// Información popUp de Sismos
 
@@ -237,21 +257,21 @@ function calcRadius(val) {
 ///// Funciones para definir leyenda de huracanes
 
 function Colorhuracan(h) {
-		return  h == "DB"  ? '#1e9ce6':
-				h == "TD"  ? '#1239c7':
-				h == "TS"  ? '#6729b3':
-				h == "HU"  ? '#260775': 
-				h == "Low" ? '#000000 ':
-				'#000000 ';
+		return  h == "DB"  ? '#fa9dc2':
+				h == "TD"  ? '#f768a1':
+				h == "TS"  ? '#ae017e':
+				h == "HU"  ? '#7a0177': 
+				h == "Low" ? '#fcc5c0':
+				'#fcc5c0';
 }
 
 function Anchohuracan(h) {
-		return  h == "Low" ? 2:
+		return  h == "Low" ? 2.5:
 				h == "DB"  ? 2.5:
-				h == "TD"  ? 3:
-				h == "TS"  ? 3.5:
-				h == "HU"  ? 4: 
-				1.5;
+				h == "TD"  ? 2.5:
+				h == "TS"  ? 2.5:
+				h == "HU"  ? 2.5: 
+				2.5;
 }
 
 function styleh(feature) {
@@ -280,16 +300,11 @@ L.geoJson(tormentas1, {
 	onEachFeature: popUpHur,
 	style: styleh,
 	pointToLayer: function (feature, latlng) {
-	return L.river(latlng, {
-		minWidth: 1,
-		maxWidth: 10
-    });
 	}
 }).addTo(huracanes);
 
-
-
 ///// Simbologías
+
 ///SISMOS
 var sismolegend = L.control({position: "bottomleft"});
 	sismolegend.onAdd = function (map) {
@@ -313,20 +328,19 @@ var ciclonlegend = L.control({position: "bottomright"});
 	ciclonlegend.onAdd = function (map) {
 		var div = L.DomUtil.create('div', 'info legend');
 		  div.innerHTML += "<b> Clasificacion de ciclones tropicales</b></br>";
-		  div.innerHTML += '<di style="background: #1e9ce6"></di><span>Disturbio tropical</span><br>';
-		  div.innerHTML += '<de style="background: #1239c7"></de><span>Depresión tropical</span><br>';
-		  div.innerHTML += '<to style="background: #6729b3"></to><span>Tormenta tropical</span><br>';
-		  div.innerHTML += '<hu style="background: #260775"></hu><span>Huracán</span><br>';
-		  div.innerHTML += '<dis style="background: #000000"></dis><span>Evento disipado</span><br>';
+		  div.innerHTML += '<di style="background: #fa9dc2"></di><span>Perturbación tropical</span><br>';
+		  div.innerHTML += '<de style="background: #f768a1"></de><span>Depresión tropical</span><br>';
+		  div.innerHTML += '<to style="background: #ae017e"></to><span>Tormenta tropical</span><br>';
+		  div.innerHTML += '<hu style="background: #7a0177"></hu><span>Huracán</span><br>';
+		  div.innerHTML += '<dis style="background: #fcc5c0"></dis><span>Evento disipado</span><br>';
 		return div;
 };
 
 ///TimeDimension sismos
 
-
-var timesismos = new L.TimeDimension({
+/*var timesismos = new L.TimeDimension({
 	timeInterval: "2000-01-01/2018-12-31",
-    period: "P7D",
+    period: "PT24H",
     });
 map.timesismos = timesismos; 
 
@@ -349,14 +363,13 @@ var timesismosControlOptions = {
 
 var timesismosControl = new L.Control.TimeDimension(timesismosControlOptions);
 	
-	
-var timeSeriesLayer = L.geoJSON(sismos_usgs2);
+///var timeSeriesLayer = L.geoJSON(sismos_usgs2);
 
 ///TimeDimension huracanes
 
 var timeciclon = new L.TimeDimension({
 		timeInterval: "2000-01-01/2018-12-31",
-        period: "P30D",
+        period: "PT24H",
     });
 map.timeciclon = timeciclon; 
 
@@ -379,12 +392,11 @@ var timeciclonControlOptions = {
 
 var timeciclonControl = new L.Control.TimeDimension(timeciclonControlOptions);
 	
-	
-var timeSeriesLayer = L.geoJSON(tormentas1);
+//var timeSeriesLayer = L.geoJSON(tormentas1);*/
 
 ///// Aparecer y desaparecer simbologías y barras de tiempo
 
-map.on('overlayadd', function (eventLayer) {
+/*map.on('overlayadd', function (eventLayer) {
 	if (eventLayer.name == '<b>Fenómenos Geológicos</b>') {
 		timesismosControl.addTo(map);
     } else if (eventLayer.name == '<b>Fenómenos Hidrometeorológicos</b>') { 
@@ -398,7 +410,7 @@ map.on('overlayremove', function (eventLayer) {
     } else if (eventLayer.name == '<b>Fenómenos Hidrometeorológicos</b>') { 
         timeciclonControl.remove(map);
 	}	
-});
+});*/
 
 map.on('overlayadd', function (eventLayer) {
 	if (eventLayer.name == '<b>Fenómenos Geológicos</b>') {
@@ -415,4 +427,3 @@ map.on('overlayremove', function (eventLayer) {
         ciclonlegend.remove(map);
 	}	
 });
-
