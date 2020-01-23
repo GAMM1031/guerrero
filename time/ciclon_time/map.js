@@ -56,12 +56,12 @@ var carto = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/ligh
 
 var baseMaps = {
 	"<b>Mapa en blanco y negro</b>": toner,
-	"<b>Mapa en tonos claros</b>": carto,
 	"<b>Mapa de calles</b>": googleStreets,
 	"<b>Imagen de satélite</b>": googleSat,
 	"<b>Mapa Híbrido</b>": googleHybrid,
 	"<b>Mapa de relieve</b>": googleTerrain,
-	"<b>Mapa de terreno</b>": terrain
+	"<b>Mapa de terreno</b>": terrain,
+	"<b>Mapa en tonos claros</b>": carto,
 };
 
 L.control.layers(baseMaps).addTo(map);
@@ -102,29 +102,25 @@ L.geoJson(guerrero, {
 
 //// Mapa de municipios de Guerrero
 
-function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: zoomToFeature
-    });
+function color_pct (ct) {
+    return ct == "Muy alto"   ? '#08519c':
+           ct == "Alto"  ? '#3182bd':
+           ct == "Medio"   ? '#6baed6':
+		   ct == "Bajo"  ? '#bdd7e7':
+           ct == "Muy bajo"   ? '#eff3ff':
+                            '#fdfcfd';
 }
 
-function mun_style(feature) {
+function style_pct (feature) {
     return {
-        fillColor: 'white',
+        fillColor: color_pct(feature.properties.RCla_CicTr),
         weight: 0.3,
         opacity: 1,
         color: 'black',
         dashArray: '0',
-        fillOpacity: 0
+        fillOpacity: 0.7
     };
 }
-
-geojson = L.geoJson(municipios_gro, {
-	onEachFeature: onEachFeature,
-	style: mun_style
-}).addTo(map);
 
 //// Funciones de información por municipio
 
@@ -139,14 +135,27 @@ function highlightFeature(e) {
 	info.update(layer.feature.properties);
 }
 
+function resetHighlight(e) {
+    municipios.resetStyle(e.target);
+	info.update();
+}
+
 function zoomToFeature(e) {
     map.fitBounds(e.target.getBounds());
 }
 
-function resetHighlight(e) {
-    geojson.resetStyle(e.target);
-	info.update();
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToFeature
+    });
 }
+
+municipios = L.geoJson(municipios_gro, {
+	style: style_pct,
+	onEachFeature: onEachFeature
+}).addTo(map);
 
 ////// Control de información de municipios
 
@@ -161,28 +170,46 @@ info.onAdd = function (map) {
 info.update = function (props) {
     this._div.innerHTML = '<h4>Información por municipio</h4>' +  (props ?
         '<b>' + props.NOMGEO + '</b><br />' + 
-		'<br><b>Riesgo a Ciclones Tropicales:</b> ' + props.RCla_CicTr + 
-		'<br><b>Grado de Vulnerabilidad:</b> ' + props.VUL_CC +
-		'<br><b>Capacidad de Adaptación:</b> ' + props.CAP_ADAP
-        : 'Pase el cursor sobre un municipio');
+		'<br><b>Capacidad de Adaptación:</b> ' + props.CAP_ADAP  +
+		'<br><b>Grado de Vulnerabilidad:</b> ' + props.VUL_CC  
+		: 'Pase el cursor sobre un municipio');
 };
 
 info.addTo(map);
+
+/////Simbología de Mapa municipios
+
+var troplegend = L.control({position: "topleft"});
+	troplegend.onAdd = function (map) {
+		var div = L.DomUtil.create('div', 'info legend');
+		  div.innerHTML += "<b> Riesgo a ciclones tropicales </b></br>";
+		  div.innerHTML += '<i style="background: #eff3ff"></i><span>Muy Bajo</span><br>';
+		  div.innerHTML += '<i style="background: #bdd7e7"></i><span>Bajo</span><br>';
+		  div.innerHTML += '<i style="background: #6baed6"></i><span>Medio</span><br>';
+		  div.innerHTML += '<i style="background: #3182bd"></i><span>Alto</span><br>';
+		  div.innerHTML += '<i style="background: #08519c"></i><span>Muy Alto</span><br>';
+		return div;
+};
+
+troplegend.addTo(map);
 
 /// Simbología CICLONES                                                
 var ciclonlegend = L.control({position: "bottomright"});
 	ciclonlegend.onAdd = function (map) {
 		var div = L.DomUtil.create('div', 'info legend');
 		  div.innerHTML += "<b> Clasificacion de ciclones tropicales</b></br>";
-		  div.innerHTML += '<di style="background: #d71c98"></di><span>Perturbación tropical</span><br>';
-		  div.innerHTML += '<de style="background: #a8319b"></de><span>Depresión tropical</span><br>';
-		  div.innerHTML += '<to style="background: #79469d"></to><span>Tormenta tropical</span><br>';
-		  div.innerHTML += '<hu style="background: #8f00ff"></hu><span>Huracán</span><br>';
-		  div.innerHTML += '<dis style="background: #dda0dd"></dis><span>Evento disipado</span><br>';
+		  div.innerHTML += '<di style="background: #fa9dc2"></di><span>Perturbación tropical</span><br>';
+		  div.innerHTML += '<de style="background: #f768a1"></de><span>Depresión tropical</span><br>';
+		  div.innerHTML += '<to style="background: #ae017e"></to><span>Tormenta tropical</span><br>';
+		  div.innerHTML += '<hu style="background: #7a0177"></hu><span>Huracán</span><br>';
+		  div.innerHTML += '<dis style="background: #fcc5c0"></dis><span>Evento disipado</span><br>';
 		return div;
 };
 
 ciclonlegend.addTo(map);
+
+
+
 
 ///TimeDimension huracanes
 
@@ -249,15 +276,15 @@ oReq.addEventListener("load", (function(xhr) {
         style: function(feature) {
             var color = "#FFF";
             if (feature.properties.tf == '0') {
-                color = "#dda0dd";
+                color = "#fa9dc2";
             } else if (feature.properties.tf == '1') {
-                color = "#d71c98";
+                color = "#f768a1";
 			} else if (feature.properties.tf == '2') {
-                color = "#a8319b";
+                color = "#7a0177";
             } else if (feature.properties.tf == '3') {
-                color = "#79469d";
+                color = "#fcc5c0";
             } else if (feature.properties.tf == '4') {
-                color = "#8f00ff";
+                color = "#ae017e";
             } 
             return {
                 "color": color,
@@ -288,6 +315,9 @@ oReq.addEventListener("load", (function(xhr) {
             }
     });
 }));
-oReq.open("GET", 'https://raw.githubusercontent.com/GMCentroGeo/agv_data/master/geojson/tormentas1.geojson'); //AQUÍ IRÍA LA URL DEL GEOJSON 
+oReq.open("GET", 'https://drive.google.com/file/d/1VEHygW5LHs-ijCVLIN0zK2Ol319yaUn2/view?usp=sharing'); //AQUÍ IRÍA LA URL DEL GEOJSON 
 oReq.send();
 
+/// respaldo ultimas dos lineas
+/// oReq.open("GET", '/tomentas1.geojson');
+///oReq.send();

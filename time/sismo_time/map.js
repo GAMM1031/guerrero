@@ -53,12 +53,13 @@ var carto = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/ligh
 
 var baseMaps = {
 	"<b>Mapa en blanco y negro</b>": toner,
-	"<b>Mapa en tonos claros</b>": carto,
 	"<b>Mapa de calles</b>": googleStreets,
 	"<b>Imagen de satélite</b>": googleSat,
 	"<b>Mapa Híbrido</b>": googleHybrid,
 	"<b>Mapa de relieve</b>": googleTerrain,
-	"<b>Mapa de terreno</b>": terrain
+	"<b>Mapa de terreno</b>": terrain,
+	"<b>Mapa en tonos claros</b>": carto
+
 };
 
 L.control.layers(baseMaps).addTo (map);
@@ -116,29 +117,23 @@ L.geoJson(guerrero, {
 
 //// Mapa de municipios de Guerrero
 
-function onEachFeature(feature, layer) {
-    layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight,
-        click: zoomToFeature
-    });
+function color_ca (ca) {
+    return ca == "Alta"  ? '#2ca25f':
+           ca == "Media"  ? '#99d8c9':
+		   ca == "Baja"  ? '#e5f5f9':
+                            '#ffffff';
 }
 
-function mun_style(feature) {
+function style_ca (feature) {
     return {
-        fillColor: 'white',
+        fillColor: color_ca(feature.properties.CAP_ADAP),
         weight: 0.3,
         opacity: 1,
         color: 'black',
         dashArray: '0',
-        fillOpacity: 0
+        fillOpacity: 0.7
     };
 }
-
-geojson = L.geoJson(municipios_gro, {
-	onEachFeature: onEachFeature,
-	style: mun_style
-}).addTo(map);
 
 //// Funciones de información por municipio
 
@@ -153,14 +148,27 @@ function highlightFeature(e) {
 	info.update(layer.feature.properties);
 }
 
+function resetHighlight(e) {
+    municipios.resetStyle(e.target);
+	info.update();
+}
+
 function zoomToFeature(e) {
     map.fitBounds(e.target.getBounds());
 }
 
-function resetHighlight(e) {
-    geojson.resetStyle(e.target);
-	info.update();
+function onEachFeature(feature, layer) {
+    layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToFeature
+    });
 }
+
+municipios = L.geoJson(municipios_gro, {
+	style: style_ca,
+	onEachFeature: onEachFeature
+}).addTo(map);
 
 ////// Control de información de municipios
 
@@ -175,13 +183,26 @@ info.onAdd = function (map) {
 info.update = function (props) {
     this._div.innerHTML = '<h4>Información por municipio</h4>' +  (props ?
         '<b>' + props.NOMGEO + '</b><br />' + 
-		'<br><b>Riesgo a Ciclones Tropicales:</b> ' + props.RCla_CicTr + 
-		'<br><b>Grado de Vulnerabilidad:</b> ' + props.VUL_CC +
-		'<br><b>Capacidad de Adaptación:</b> ' + props.CAP_ADAP
-        : 'Pase el cursor sobre un municipio');
+		'<br><b>Grado de Vulnerabilidad:</b> ' + props.VUL_CC  +
+		'<br><b>Peligro a ciclones tropicales:</b> ' + props.RCla_CicTr
+		: 'Pase el cursor sobre un municipio');
 };
 
 info.addTo(map);
+
+/////Simbología de Mapa municipios
+
+var capadaplegend = L.control({position: "topleft"});
+	capadaplegend.onAdd = function (map) {
+		var div = L.DomUtil.create('div', 'info legend');
+		  div.innerHTML += "<b> Capacidad de adaptación </b></br>";
+		  div.innerHTML += '<i style="background: #e5f5f9"></i><span>Baja</span><br>';
+		  div.innerHTML += '<i style="background: #99d8c9"></i><span>Media</span><br>';
+		  div.innerHTML += '<i style="background: #2ca25f"></i><span>Alta</span><br>';
+		return div;
+};
+
+capadaplegend.addTo(map);
 
 ///// Información popUp de Sismos
 
@@ -339,5 +360,5 @@ oReq.addEventListener("load", (function(xhr) {
             }
     });
 }));
-oReq.open("GET", 'https://raw.githubusercontent.com/GMCentroGeo/agv_data/master/geojson/sismos_usgs2.geojson');
+oReq.open("GET", 'https://drive.google.com/file/d/1eFLJ8dR1zKNlstI8SFY6Xc13ZlwYe0vx/view?usp=sharing');
 oReq.send();
