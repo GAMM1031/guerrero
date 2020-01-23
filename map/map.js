@@ -328,11 +328,11 @@ var ciclonlegend = L.control({position: "bottomright"});
 	ciclonlegend.onAdd = function (map) {
 		var div = L.DomUtil.create('div', 'info legend');
 		  div.innerHTML += "<b> Clasificacion de ciclones tropicales</b></br>";
-		  div.innerHTML += '<di style="background: #fa9dc2"></di><span>Perturbación tropical</span><br>';
+		  div.innerHTML += '<de style="background: #fa9dc2"></de><span>Perturbación tropical</span><br>';
 		  div.innerHTML += '<de style="background: #f768a1"></de><span>Depresión tropical</span><br>';
-		  div.innerHTML += '<to style="background: #ae017e"></to><span>Tormenta tropical</span><br>';
-		  div.innerHTML += '<hu style="background: #7a0177"></hu><span>Huracán</span><br>';
-		  div.innerHTML += '<dis style="background: #fcc5c0"></dis><span>Evento disipado</span><br>';
+		  div.innerHTML += '<de style="background: #ae017e"></de><span>Tormenta tropical</span><br>';
+		  div.innerHTML += '<de style="background: #7a0177"></de><span>Huracán</span><br>';
+		  div.innerHTML += '<de style="background: #fcc5c0"></de><span>Evento disipado</span><br>';
 		return div;
 };
 
